@@ -66,44 +66,106 @@ def css_uygula():
            3. BUTON TASARIMLARI
            ========================================= */
         /* Ana Eylem Butonları (Primary) */
-        div.stButton > button:first-child {
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            color: #ffffff;
-            border: none;
+        div.stButton > button:first-child,
+        div.stButton > button {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            border: none !important;
             border-radius: 8px;
             padding: 0.6rem 1.5rem;
-            font-weight: 600;
+            font-weight: 700 !important;
             font-size: 0.95rem;
             letter-spacing: 0.3px;
             transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
             box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.25);
             font-family: 'Plus Jakarta Sans', sans-serif !important;
             width: 100%;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
-        div.stButton > button:first-child:hover {
+        div.stButton > button:first-child:hover,
+        div.stButton > button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%) !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
         }
 
-        div.stButton > button:first-child:active {
+        div.stButton > button:first-child:active,
+        div.stButton > button:active {
             transform: translateY(0px);
             box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+
+        /* Buton içindeki tüm span/p elementleri */
+        div.stButton > button span,
+        div.stButton > button p,
+        div.stDownloadButton > button span,
+        div.stDownloadButton > button p {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+
+        /* Download (İndirme) Butonu */
+        div.stDownloadButton > button,
+        [data-testid="stDownloadButton"] > button {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            border: none !important;
+            border-radius: 8px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 700 !important;
+            font-size: 0.95rem;
+            letter-spacing: 0.3px;
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.25);
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            width: 100%;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        div.stDownloadButton > button:hover,
+        [data-testid="stDownloadButton"] > button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+
+        /* Disabled (devre dışı) Buton */
+        div.stButton > button:disabled,
+        div.stButton > button[disabled] {
+            background: rgba(39, 39, 42, 0.6) !important;
+            color: #71717a !important;
+            -webkit-text-fill-color: #71717a !important;
+            box-shadow: none !important;
+            cursor: not-allowed;
+            text-shadow: none;
         }
 
         /* Sidebar içindeki butonlar (Secondary - Hayalet Buton) */
-        [data-testid="stSidebar"] div.stButton > button:first-child {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #e4e4e7;
+        [data-testid="stSidebar"] div.stButton > button:first-child,
+        [data-testid="stSidebar"] div.stButton > button {
+            background: transparent !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: #f4f4f5 !important;
+            -webkit-text-fill-color: #f4f4f5 !important;
             box-shadow: none;
+            text-shadow: none;
         }
 
-        [data-testid="stSidebar"] div.stButton > button:first-child:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.3);
-            color: #ffffff;
+        [data-testid="stSidebar"] div.stButton > button:first-child:hover,
+        [data-testid="stSidebar"] div.stButton > button:hover {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
             transform: none;
         }
 
@@ -429,6 +491,114 @@ def css_uygula():
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+        }
+
+        /* =========================================
+           13. RESPONSIVE TASARIM (MOBİL UYUM)
+           ========================================= */
+
+        /* Tablet (768px ve altı) */
+        @media (max-width: 768px) {
+            .main .block-container {
+                padding-top: 1rem;
+                padding-bottom: 2rem;
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+                max-width: 100% !important;
+            }
+
+            .stMarkdown h1 { font-size: 1.8rem !important; }
+            .stMarkdown h2 { font-size: 1.4rem !important; }
+            .stMarkdown h3 { font-size: 1.1rem !important; }
+
+            .glass-card {
+                padding: 1.5rem 1rem;
+                border-radius: 12px;
+            }
+
+            .item-card {
+                padding: 0.75rem 1rem;
+            }
+
+            .report-card {
+                padding: 1rem;
+                border-radius: 10px;
+            }
+
+            [data-testid="stMetric"] {
+                padding: 1rem;
+            }
+
+            [data-testid="stMetricValue"] {
+                font-size: 1.4rem !important;
+            }
+
+            /* Hero başlık mobil uyum */
+            .animate-fade-up h1 {
+                font-size: 2rem !important;
+                line-height: 1.2 !important;
+            }
+
+            .animate-fade-up p {
+                font-size: 0.95rem !important;
+            }
+
+            /* Stat bar mobil wrap */
+            .stat-bar {
+                justify-content: center;
+            }
+        }
+
+        /* Mobil (480px ve altı) */
+        @media (max-width: 480px) {
+            .main .block-container {
+                padding-left: 0.5rem !important;
+                padding-right: 0.5rem !important;
+            }
+
+            .stMarkdown h1 { font-size: 1.5rem !important; }
+            .stMarkdown h2 { font-size: 1.2rem !important; }
+
+            .glass-card {
+                padding: 1.2rem 0.8rem;
+            }
+
+            .animate-fade-up h1 {
+                font-size: 1.6rem !important;
+            }
+
+            .badge {
+                font-size: 0.65rem;
+            }
+
+            .item-card {
+                gap: 0.6rem;
+            }
+
+            .item-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 1rem;
+            }
+
+            div.stButton > button,
+            div.stDownloadButton > button {
+                padding: 0.5rem 1rem;
+                font-size: 0.88rem;
+            }
+
+            [data-testid="stMetric"] {
+                padding: 0.8rem;
+                border-radius: 10px;
+            }
+
+            [data-testid="stMetricValue"] {
+                font-size: 1.2rem !important;
+            }
+
+            .report-card {
+                padding: 0.8rem;
+            }
         }
 
     </style>
