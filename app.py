@@ -95,13 +95,20 @@ if not st.session_state.data["hazir"]:
                 with st.status("Müfredat İşleniyor...", expanded=True) as durum:
                     try:
                         st.write("📄 PDF metne dönüştürülüyor...")
+                        
+                        # --- SENIOR FIX BAŞLANGICI ---
                         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
                             tmp.write(file.read())
-                            metin = pdf_motoru.mufredat_metnini_cikar(tmp.name)
+                            tmp.flush() # Veriyi RAM'den fiziksel diske zorla yaz!
+                            gecici_yol = tmp.name
+                        
+                        # Dosya tamamen kaydedilip kapatıldıktan sonra motora gönder
+                        metin = pdf_motoru.mufredat_metnini_cikar(gecici_yol)
+                        # --- SENIOR FIX BİTİŞİ ---
 
                         st.write("🧠 Yapay zeka seviye ve hedefleri belirliyor (Bellek kontrol ediliyor)...")
                         
-                        # Burada maliyet kurtarıcı Cache (Bellek) fonksiyonunu çağırıyoruz
+                        # Bellek fonksiyonunu çağırıyoruz
                         seviye, konular = ai_analiz_getir(metin)
 
                         st.session_state.data.update({
@@ -116,8 +123,9 @@ if not st.session_state.data["hazir"]:
                         durum.update(label="❌ Hata Oluştu", state="error", expanded=True)
                         st.error(str(e))
                     finally:
-                        if 'tmp' in locals():
-                            os.remove(tmp.name)
+                        # İşlem bitince sunucuda yer kaplamaması için geçici dosyayı siliyoruz
+                        if 'gecici_yol' in locals() and os.path.exists(gecici_yol):
+                            os.remove(gecici_yol)
         else:
             st.markdown("<br>", unsafe_allow_html=True)
             theme.ozellik_listesi_goster([
