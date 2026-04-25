@@ -24,11 +24,12 @@ if 'data' not in st.session_state:
         "seviye": None,
         "konular": [],
         "hazir": False,
-        "raporlar": {},           # SENIOR EKLENTİ: Ajanın bulduğu sonuçları hafızada tutar
-        "arama_tamamlandi": False # SENIOR EKLENTİ: İndirme butonunu göstermek için tetikleyici
+        "raporlar": {},           # Ajanın bulduğu sonuçları hafızada tutar
+        "yol_haritasi": None,     # Çalışma programını hafızada tutar
+        "arama_tamamlandi": False # İndirme butonunu göstermek için tetikleyici
     }
 
-# YENİ ÖZELLİK 1: BELLEK (CACHING) 
+# BELLEK (CACHING) 
 # Aynı metin gelirse LLM'i tekrar çalıştırma
 @st.cache_data(show_spinner=False)
 def ai_analiz_getir(metin):
@@ -54,7 +55,7 @@ with st.sidebar:
         ("1", "PDF müfredatınızı yükleyin"),
         ("2", "Analizi başlatın"),
         ("3", "Otonom araştırmayı çalıştırın"),
-        ("4", "Akademik kaynakları indirin"),
+        ("4", "Çalışma Programınızı indirin"),
     ])
 
     st.markdown("<br>", unsafe_allow_html=True)
@@ -71,9 +72,7 @@ with st.sidebar:
 # 4. ANA AKIŞ - ADIM 1: YÜKLEME VE ANALİZ
 # ==========================================
 if not st.session_state.data["hazir"]:
-
     theme.hero_baslik_goster()
-
     col_pad1, col_main, col_pad2 = st.columns([1, 2.2, 1])
 
     with col_main:
@@ -91,20 +90,20 @@ if not st.session_state.data["hazir"]:
             theme.dosya_bilgi_satirlari_goster(file.name, dosya_kb)
             st.markdown("<br>", unsafe_allow_html=True)
 
-            if st.button("🚀 Analizi Başlat", use_container_width=True):
+            if st.button("Analizi Başlat", use_container_width=True):
                 with st.status("Müfredat İşleniyor...", expanded=True) as durum:
                     try:
                         st.write("📄 PDF metne dönüştürülüyor...")
                         
-                        # --- SENIOR FIX BAŞLANGICI ---
+                        # --- FIX BAŞLANGICI ---
                         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
                             tmp.write(file.read())
-                            tmp.flush() # Veriyi RAM'den fiziksel diske zorla yaz!
+                            tmp.flush() # Veriyi RAM'den fiziksel diske yazılması
                             gecici_yol = tmp.name
                         
                         # Dosya tamamen kaydedilip kapatıldıktan sonra motora gönder
                         metin = pdf_motoru.mufredat_metnini_cikar(gecici_yol)
-                        # --- SENIOR FIX BİTİŞİ ---
+                        # --- FIX BİTİŞİ ---
 
                         st.write("🧠 Yapay zeka seviye ve hedefleri belirliyor (Bellek kontrol ediliyor)...")
                         
@@ -123,15 +122,15 @@ if not st.session_state.data["hazir"]:
                         durum.update(label="❌ Hata Oluştu", state="error", expanded=True)
                         st.error(str(e))
                     finally:
-                        # İşlem bitince sunucuda yer kaplamaması için geçici dosyayı siliyoruz
+                        # İşlem bitince sunucuda yer kaplamaması için geçici dosyaların silinmesi
                         if 'gecici_yol' in locals() and os.path.exists(gecici_yol):
                             os.remove(gecici_yol)
         else:
             st.markdown("<br>", unsafe_allow_html=True)
             theme.ozellik_listesi_goster([
-                ("⚡", "Sıfır Maliyetli Bellek", "Aynı analizler için API kredisi harcamaz"),
                 ("🎯", "Konu Çıkarımı", "En kritik araştırma konularını belirler"),
                 ("📚", "Çok Yönlü Kaynaklar", "Makaleler ve YouTube eğitim videoları"),
+                ("🗓️", "Akademik Yol Haritası", "Kaynaklara göre çalışma programı çıkarır"), # Metin güncellendi
                 ("💾", "Dışa Aktarma", "Rehberi metin dosyası (.txt) olarak indirme imkanı"),
             ])
 
@@ -140,7 +139,6 @@ if not st.session_state.data["hazir"]:
 # ==========================================
 else:
     theme.sonuc_sayfasi_baslik_goster()
-
     col_ozet, col_arastirma = st.columns([1, 2.2], gap="large")
 
     with col_ozet:
@@ -161,10 +159,10 @@ else:
 
     with col_arastirma:
         
-        # YENİ ÖZELLİK 2: EĞER ARAMA BİTTİYSE STATİK EKRANI VE İNDİRME BUTONUNU GÖSTER
+        # EĞER ARAMA BİTTİYSE STATİK EKRANI VE İNDİRME BUTONUNU GÖSTER
         if st.session_state.data["arama_tamamlandi"]:
             theme.bolum_badge_goster("📚 Akademik Okuma ve İzleme Rehberiniz")
-            st.success("✅ Tüm otonom araştırmalar tamamlandı. Raporunuzu aşağıdan bilgisayarınıza indirebilirsiniz.")
+            st.success("✅ Tüm otonom araştırmalar ve çalışma programı tamamlandı. Raporunuzu aşağıdan indirebilirsiniz.")
             
             # Metin dosyasının içeriğini hazırlıyoruz
             tam_rapor_txt = f"{'='*60}\n  {st.session_state.data['seviye']} Seviye - Akademik Rehber\n{'='*60}\n\n"
@@ -179,17 +177,17 @@ else:
                 
                 # İndirilecek dosyaya ekle
                 tam_rapor_txt += f"--- {konu} ---\n{icerik}\n\n{'─'*40}\n\n"
-                
-            st.markdown("<br>", unsafe_allow_html=True)
             
             # Sihirli İndirme Butonu
+            st.markdown("<br>", unsafe_allow_html=True)
             st.download_button(
-                label="📥 Tüm Rehberi İndir (.txt)",
+                label="📥 Tüm Rehberi ve Programı İndir (.txt)",
                 data=tam_rapor_txt,
-                file_name="akademik_rehber.txt",
+                file_name="akademik_rehber_ve_program.txt",
                 mime="text/plain",
                 use_container_width=True
             )
+
 
         # EĞER BUTONA BASILDIYSA AJANLARI ÇALIŞTIR
         elif baslat_butonu:
@@ -203,37 +201,39 @@ else:
 
             ajan_calistirici = ajan_beyni.arama_ajani_olustur(st.session_state.data["seviye"])
 
+            # 1. Kaynakları Bul
             for konu in st.session_state.data["konular"]:
                 with st.status(f"🔍 **{konu}** için makale ve video araştırılıyor...", expanded=True) as durum:
                     try:
-                        rapor = ajan_calistirici.invoke({
-                            "input": f"Lütfen şu konu için 2 akademik makale ve 1 adet YouTube eğitim videosu bul: {konu}"
-                        })["output"]
-
+                        rapor = ajan_calistirici.invoke({"input": f"Lütfen şu konu için 2 akademik makale ve 1 adet YouTube eğitim videosu bul: {konu}"})["output"]
                         durum.update(label=f"✅ **{konu}** tamamlandı", state="complete", expanded=False)
 
-                        # Listeden string'e güvenli dönüşüm
                         if isinstance(rapor, list):
                             temiz_metin = "".join([p.get('text', '') if isinstance(p, dict) else str(p) for p in rapor])
                         else:
                             temiz_metin = rapor
                             
-                        # YENİ: Çıktıyı gelecekte indirmek üzere hafızaya kaydet
                         st.session_state.data["raporlar"][konu] = temiz_metin
-
                         theme.sonuc_kart_ust_goster(konu)
                         st.markdown(temiz_metin)
                         theme.sonuc_kart_alt_kapat()
 
                     except Exception as e:
                         durum.update(label=f"❌ **{konu}** araması başarısız", state="error")
-                        st.warning(f"Ajan bu konuda zorlandı. Hata: {str(e)}")
                         st.session_state.data["raporlar"][konu] = f"❌ Hata: {str(e)}"
             
-            # Tüm aramalar bittiğinde indirme butonunu göstermek için sayfayı yenile
+            # 2. Kaynaklar Bitince Yol Haritası (Road Map) Çıkar
+            with st.status("🗓️ Kaynaklar sentezleniyor ve Çalışma Programı oluşturuluyor...", expanded=True) as durum:
+                try:
+                    yol_haritasi = ajan_beyni.calisma_programi_olustur(st.session_state.data["raporlar"], st.session_state.data["seviye"])
+                    st.session_state.data["yol_haritasi"] = yol_haritasi
+                    durum.update(label="✅ Çalışma Programı Hazırlandı", state="complete", expanded=False)
+                except Exception as e:
+                    st.session_state.data["yol_haritasi"] = f"Program oluşturulamadı: {str(e)}"
+                    durum.update(label="❌ Program oluşturma başarısız", state="error")
+
             st.session_state.data["arama_tamamlandi"] = True
             st.rerun()
 
-        # BEKLEME EKRANI
         else:
             theme.ajan_bekleme_ekrani_goster()
