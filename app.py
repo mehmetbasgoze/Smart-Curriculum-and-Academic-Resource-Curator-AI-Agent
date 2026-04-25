@@ -53,7 +53,7 @@ with st.sidebar:
         ("1", "PDF müfredatınızı yükleyin"),
         ("2", "Analizi başlatın"),
         ("3", "Otonom araştırmayı çalıştırın"),
-        ("4", "2 Haftalık Programınızı indirin"),
+        ("4", "1 Haftalık Programınızı indirin"), # DÜZELTİLDİ
     ])
 
     st.markdown("<br>", unsafe_allow_html=True)
@@ -120,7 +120,7 @@ if not st.session_state.data["hazir"]:
             theme.ozellik_listesi_goster([
                 ("🎯", "Konu Çıkarımı", "En kritik araştırma konularını belirler"),
                 ("📚", "Çok Yönlü Kaynaklar", "Makaleler ve YouTube eğitim videoları"),
-                ("🗓️", "Akademik Plan", "Kaynaklara göre 2 haftalık program çıkarır"), 
+                ("🗓️", "Akademik Plan", "Kaynaklara göre 1 haftalık program çıkarır"), # DÜZELTİLDİ
                 ("💾", "Dışa Aktarma", "Rehberi metin dosyası (.txt) olarak indirme imkanı"),
             ])
 
@@ -163,14 +163,14 @@ else:
                 theme.sonuc_kart_alt_kapat()
                 tam_rapor_txt += f"--- {konu} ---\n{icerik}\n\n{'─'*40}\n\n"
             
-            # DÜZELTME: Ekranda 2 Haftalık Programı gösterme bloku eklendi
             st.divider()
-            theme.sonuc_kart_ust_goster("🗓️ 2 Haftalık Akademik Gelişim Planı")
-            st.markdown(st.session_state.data["haftalik_plan"])
+            theme.sonuc_kart_ust_goster("🗓️ 1 Haftalık Akademik Gelişim Planı") # DÜZELTİLDİ
+            
+            # Programın ekranda daha şık görünmesi için Markdown bloğuna alıyoruz
+            st.markdown(f"```text\n{st.session_state.data['haftalik_plan']}\n```") 
             theme.sonuc_kart_alt_kapat()
             
-            # DÜZELTME: TXT dosyasına programın eklenmesi
-            tam_rapor_txt += f"{'='*60}\n  2 HAFTALIK ÇALIŞMA PROGRAMI\n{'='*60}\n\n"
+            tam_rapor_txt += f"{'='*60}\n  1 HAFTALIK ÇALIŞMA PROGRAMI\n{'='*60}\n\n" # DÜZELTİLDİ
             tam_rapor_txt += str(st.session_state.data["haftalik_plan"]) + "\n"
             
             st.markdown("<br>", unsafe_allow_html=True)
@@ -220,7 +220,7 @@ else:
                     time.sleep(5)
 
             # Road Map
-            with st.status("🗓️ Kaynaklar sentezleniyor ve 2 Haftalık Program oluşturuluyor...", expanded=True) as durum:
+            with st.status("🗓️ Kaynaklar sentezleniyor ve 1 Haftalık Program oluşturuluyor...", expanded=True) as durum: # DÜZELTİLDİ
                 try:
                     plan = ajan_beyni.haftalik_plan_olustur(st.session_state.data["raporlar"], st.session_state.data["seviye"])
                     st.session_state.data["haftalik_plan"] = plan

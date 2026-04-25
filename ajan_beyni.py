@@ -92,27 +92,38 @@ def arama_ajani_olustur(zorluk_seviyesi):
     )
 
 def haftalik_plan_olustur(raporlar_dict, zorluk_seviyesi):
-    """Bulunan tüm kaynakları 2 haftalık bir ders programına dönüştürür."""
+    """Bulunan tüm kaynakları 1 haftalık (7 günlük) nokta atışı bir programa dönüştürür."""
     llm = llm_olustur()
     
-    # Tüm kaynakları tek bir metin bloğunda birleştiriyoruz
-    kaynak_metni = ""
+    # --- SENIOR FIX: Token Optimizasyonu ---
+    sadelestirilmis_kaynaklar = ""
     for konu, icerik in raporlar_dict.items():
-        kaynak_metni += f"\n--- KONU: {konu} ---\n{icerik}\n"
-        
-    mentor_prompt = f"""Sen kıdemli bir akademik mentörsün. 
-    Öğrenci Seviyesi: {zorluk_seviyesi} (Yüksek Lisans Seviyesi).
+        sadelestirilmis_kaynaklar += f"\n--- {konu} ---\n"
+        for satir in str(icerik).split('\n'):
+            if "**[" in satir or "- **Video Linki:**" in satir:
+                sadelestirilmis_kaynaklar += f"{satir}\n"
     
-    Aşağıda 3 farklı ana konu için bulunan akademik makaleler ve YouTube videoları yer almaktadır:
-    {kaynak_metni}
+    mentor_prompt = f"""Sen kıdemli bir akademik mentörsün. Öğrenci Seviyesi: {zorluk_seviyesi} (Yüksek Lisans).
+    Aşağıda 3 farklı ana konu için bulunan akademik kaynakların bir özeti yer almaktadır:
+    {sadelestirilmis_kaynaklar}
     
-    Görevin: Bu kaynakları kullanarak daha yoğun ve odaklı 2 HAFTALIK, detaylı bir 'Haftalık Ders Programı' hazırlamak.
-    1. Her haftayı bir ana hedefe ayır (Toplam 2 Hafta).
-    2. Hangi gün hangi makalenin okunacağını ve hangi videonun izleneceğini belirt.
-    3. Makale okumalarından sonra videoların 'pekiştirici' olarak kullanılmasını sağla.
-    4. Programı bir tablo veya çok düzenli bir liste formatında, profesyonel bir dille hazırla.
+    Görevin: SADECE bu kaynakları kullanarak 1 HAFTALIK (7 Günlük), yoğun bir ders programı hazırlamak.
     
-    Yanıtını doğrudan programla başlat, giriş/çıkış cümleleri kurma.
+    Program KESİNLİKLE aşağıdaki formatta, gün gün olmalıdır:
+    Pazartesi: [Sadece ilgili Makale veya Video Başlığı/Linki]
+    Salı: [Sadece ilgili Makale veya Video Başlığı/Linki]
+    Çarşamba: [Sadece ilgili Makale veya Video Başlığı/Linki]
+    Perşembe: [Sadece ilgili Makale veya Video Başlığı/Linki]
+    Cuma: [Sadece ilgili Makale veya Video Başlığı/Linki]
+    Cumartesi: [Sadece ilgili Makale veya Video Başlığı/Linki]
+    Pazar: [Sadece ilgili Makale veya Video Başlığı/Linki]
+    
+    Kurallar:
+    1. Tüm kaynakları (makale ve videolar) bu 7 güne mantıklı bir şekilde dağıt.
+    2. Bazı günlerde sadece makale, bazı günlerde sadece video, zor konularda ise ikisi birden (örneğin "... makalesi + ... videosu") olabilir.
+    3. Makalelerden sonra videoların 'pekiştirici' olarak izlenmesine dikkat et.
+    4. Sadece yukarıda verdiğim kaynakları kullan, ekstra kaynak uydurma.
+    5. Yanıtını DOĞRUDAN programla başlat (Pazartesi: diyerek), ekstra giriş/çıkış veya açıklama cümleleri KESİNLİKLE kurma.
     """
     
     try:
@@ -121,5 +132,6 @@ def haftalik_plan_olustur(raporlar_dict, zorluk_seviyesi):
         if isinstance(content, list):
             return "".join([p.get('text', '') if isinstance(p, dict) else str(p) for p in content]).strip()
         return str(content).strip()
+            
     except Exception as e:
-        return f"Plan oluşturulamadı: {str(e)}"
+        return f"Plan oluşturulamadı (Lütfen tekrar deneyin): {str(e)}"
