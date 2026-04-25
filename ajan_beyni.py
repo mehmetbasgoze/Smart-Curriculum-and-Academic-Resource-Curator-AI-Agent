@@ -95,35 +95,37 @@ def haftalik_plan_olustur(raporlar_dict, zorluk_seviyesi):
     """Bulunan tüm kaynakları 1 haftalık (7 günlük) nokta atışı bir programa dönüştürür."""
     llm = llm_olustur()
     
-    # --- SENIOR FIX: Token Optimizasyonu ---
+    # --- Token Optimizasyonu ---
+    # Makale linklerini silmeden sadece uzun özet ve neden paragraflarının atılması 
     sadelestirilmis_kaynaklar = ""
     for konu, icerik in raporlar_dict.items():
-        sadelestirilmis_kaynaklar += f"\n--- {konu} ---\n"
+        sadelestirilmis_kaynaklar += f"\n--- KONU: {konu} ---\n"
         for satir in str(icerik).split('\n'):
-            if "**[" in satir or "- **Video Linki:**" in satir:
-                sadelestirilmis_kaynaklar += f"{satir}\n"
+            # Sadece uzun metin içeren kısımları filtrele, başlıklar ve LİNKLER kalsın!
+            if "Özet:" not in satir and "Neden" not in satir:
+                if satir.strip(): # Boş satırları atla
+                    sadelestirilmis_kaynaklar += f"{satir}\n"
     
-    mentor_prompt = f"""Sen kıdemli bir akademik mentörsün. Öğrenci Seviyesi: {zorluk_seviyesi} (Yüksek Lisans).
-    Aşağıda 3 farklı ana konu için bulunan akademik kaynakların bir özeti yer almaktadır:
+    mentor_prompt = f"""Sen kıdemli bir akademik mentörsün. Öğrenci Seviyesi: {zorluk_seviyesi}.
+    Aşağıda 3 farklı ana konu için bulunan akademik kaynakların listesi (başlık ve linkler) yer almaktadır:
     {sadelestirilmis_kaynaklar}
     
-    Görevin: SADECE bu kaynakları kullanarak 1 HAFTALIK (7 Günlük), yoğun bir ders programı hazırlamak.
+    Görevin: SADECE bu kaynakları kullanarak 1 HAFTALIK (7 Günlük), çeşitli ve dengeli bir ders programı hazırlamak.
     
-    Program KESİNLİKLE aşağıdaki formatta, gün gün olmalıdır:
-    Pazartesi: [Sadece ilgili Makale veya Video Başlığı/Linki]
-    Salı: [Sadece ilgili Makale veya Video Başlığı/Linki]
-    Çarşamba: [Sadece ilgili Makale veya Video Başlığı/Linki]
-    Perşembe: [Sadece ilgili Makale veya Video Başlığı/Linki]
-    Cuma: [Sadece ilgili Makale veya Video Başlığı/Linki]
-    Cumartesi: [Sadece ilgili Makale veya Video Başlığı/Linki]
-    Pazar: [Sadece ilgili Makale veya Video Başlığı/Linki]
+    KRİTİK KURALLAR:
+    1. HİÇBİR KAYNAĞI SÜREKLİ TEKRAR ETME! Elimde birden fazla makale ve video var, hepsini günlere dengeli dağıtmalısın.
+    2. Bütün haftayı aynı videoyla veya aynı makaleyle doldurmak KESİNLİKLE YASAKTIR.
+    3. Program KESİNLİKLE aşağıdaki şablona harfiyen uymalıdır:
     
-    Kurallar:
-    1. Tüm kaynakları (makale ve videolar) bu 7 güne mantıklı bir şekilde dağıt.
-    2. Bazı günlerde sadece makale, bazı günlerde sadece video, zor konularda ise ikisi birden (örneğin "... makalesi + ... videosu") olabilir.
-    3. Makalelerden sonra videoların 'pekiştirici' olarak izlenmesine dikkat et.
-    4. Sadece yukarıda verdiğim kaynakları kullan, ekstra kaynak uydurma.
-    5. Yanıtını DOĞRUDAN programla başlat (Pazartesi: diyerek), ekstra giriş/çıkış veya açıklama cümleleri KESİNLİKLE kurma.
+    Pazartesi: [Farklı bir Makale veya Video Başlığı ve Linki]
+    Salı: [Farklı bir Makale veya Video Başlığı ve Linki]
+    Çarşamba: [Farklı bir Makale + Farklı bir Video]
+    Perşembe: [Farklı bir Makale]
+    Cuma: [Farklı bir Video]
+    Cumartesi: [Farklı bir Video + Farklı bir Makale]
+    Pazar: [Haftanın genel tekrarı veya kalan son Makale]
+    
+    Yanıtını DOĞRUDAN Pazartesi: diyerek programla başlat, ekstra cümle kurma.
     """
     
     try:
