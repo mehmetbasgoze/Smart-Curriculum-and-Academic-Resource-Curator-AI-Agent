@@ -4,23 +4,15 @@
 
 **Yapay zeka destekli otonom müfredat analiz ve akademik kaynak küratörlüğü sistemi**
 
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.56-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io)
-[![Google Cloud](https://img.shields.io/badge/Google_Cloud-Vertex_AI-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)](https://cloud.google.com/vertex-ai)
-[![LangChain](https://img.shields.io/badge/LangChain-Agent_Framework-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)](https://langchain.com)
-[![Gemini](https://img.shields.io/badge/Gemini-2.5_Flash-8E75B2?style=for-the-badge&logo=google-gemini&logoColor=white)](https://deepmind.google/technologies/gemini/)
-
 <br/>
-
-<img src="https://img.shields.io/badge/Status-Active-success?style=flat-square" alt="Status">
-<img src="https://img.shields.io/badge/UI-Dark_Glassmorphism-blueviolet?style=flat-square" alt="UI Theme">
-<img src="https://img.shields.io/badge/Architecture-Multi--Agent-orange?style=flat-square" alt="Architecture">
 
 ---
 
 *PDF formatındaki ders müfredatlarını yapay zeka ile analiz eden, akademik seviye belirleyen ve otonom araştırma ajanları aracılığıyla ilgili akademik makaleler ile YouTube eğitim videolarını otomatik olarak küratörleyen tam yığın (full-stack) bir AI Agent uygulamasıdır.*
 
 </div>
+
+<br/>
 
 ---
 
@@ -330,8 +322,4 @@ Katkılarınızı memnuniyetle karşılıyoruz! Aşağıdaki adımları izleyin:
 
 ---
 
-<div align="center">
 
-**Built with ❤️ using Google Gemini & LangChain**
-
-</div>
