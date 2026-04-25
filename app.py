@@ -195,7 +195,7 @@ else:
             ajan_calistirici = ajan_beyni.arama_ajani_olustur(st.session_state.data["seviye"])
 
             # 1. Kaynakları Bul
-            for index, konu in st.session_state.data["konular"]:
+            for index, konu in enumerate(st.session_state.data["konular"]):
                 with st.status(f"🔍 **{konu}** için makale ve video araştırılıyor...", expanded=True) as durum:
                     try:
                         rapor = ajan_calistirici.invoke({"input": f"Lütfen şu konu için 2 akademik makale ve 1 adet YouTube eğitim videosu bul: {konu}"})["output"]
