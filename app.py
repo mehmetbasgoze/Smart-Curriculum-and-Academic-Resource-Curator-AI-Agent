@@ -29,7 +29,7 @@ if 'data' not in st.session_state:
     }
 
 # YENİ ÖZELLİK 1: BELLEK (CACHING) 
-# Aynı metin gelirse LLM'i tekrar çalıştırmaz, API maliyetini $0 yapar!
+# Aynı metin gelirse LLM'i tekrar çalıştırma
 @st.cache_data(show_spinner=False)
 def ai_analiz_getir(metin):
     return ajan_beyni.mufredati_analiz_et(metin)
@@ -132,7 +132,7 @@ if not st.session_state.data["hazir"]:
                 ("⚡", "Sıfır Maliyetli Bellek", "Aynı analizler için API kredisi harcamaz"),
                 ("🎯", "Konu Çıkarımı", "En kritik araştırma konularını belirler"),
                 ("📚", "Çok Yönlü Kaynaklar", "Makaleler ve YouTube eğitim videoları"),
-                ("💾", "Dışa Aktarma", "Rehberi Markdown (.md) olarak indirme imkanı"),
+                ("💾", "Dışa Aktarma", "Rehberi metin dosyası (.txt) olarak indirme imkanı"),
             ])
 
 # ==========================================
@@ -166,8 +166,8 @@ else:
             theme.bolum_badge_goster("📚 Akademik Okuma ve İzleme Rehberiniz")
             st.success("✅ Tüm otonom araştırmalar tamamlandı. Raporunuzu aşağıdan bilgisayarınıza indirebilirsiniz.")
             
-            # Markdown dosyasının içeriğini hazırlıyoruz
-            tam_rapor_md = f"# 🎓 {st.session_state.data['seviye']} Seviye - Akademik Rehber\n\n"
+            # Metin dosyasının içeriğini hazırlıyoruz
+            tam_rapor_txt = f"{'='*60}\n  {st.session_state.data['seviye']} Seviye - Akademik Rehber\n{'='*60}\n\n"
             
             for konu in st.session_state.data["konular"]:
                 icerik = st.session_state.data["raporlar"].get(konu, "İçerik bulunamadı.")
@@ -178,16 +178,16 @@ else:
                 theme.sonuc_kart_alt_kapat()
                 
                 # İndirilecek dosyaya ekle
-                tam_rapor_md += f"## 🔍 {konu}\n{icerik}\n\n---\n\n"
+                tam_rapor_txt += f"--- {konu} ---\n{icerik}\n\n{'─'*40}\n\n"
                 
             st.markdown("<br>", unsafe_allow_html=True)
             
             # Sihirli İndirme Butonu
             st.download_button(
-                label="📥 Tüm Rehberi İndir (.md)",
-                data=tam_rapor_md,
-                file_name="akademik_rehber.md",
-                mime="text/markdown",
+                label="📥 Tüm Rehberi İndir (.txt)",
+                data=tam_rapor_txt,
+                file_name="akademik_rehber.txt",
+                mime="text/plain",
                 use_container_width=True
             )
 
