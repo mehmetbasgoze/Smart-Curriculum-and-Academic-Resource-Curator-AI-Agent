@@ -9,7 +9,11 @@ def llm_olustur(temperature=0.2):
         model=config.MODEL_NAME,
         project=config.PROJECT_ID,
         location=config.LOCATION,
-        temperature=temperature 
+        temperature=temperature,
+        # Kotaya takılınca sonsuza kadar bekleme en fazla 2 kez dene
+        max_retries=2,
+        # 45 saniye içinde cevap gelmezse sistemi kapat
+        timeout=45 
     )
 
 def mufredati_analiz_et(pdf_metni):

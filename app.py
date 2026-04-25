@@ -4,6 +4,7 @@ import os
 import theme
 import pdf_motoru
 import ajan_beyni
+import time
 
 # ==========================================
 # 1. SAYFA KURULUMU VE TEMA
@@ -194,7 +195,7 @@ else:
             ajan_calistirici = ajan_beyni.arama_ajani_olustur(st.session_state.data["seviye"])
 
             # 1. Kaynakları Bul
-            for konu in st.session_state.data["konular"]:
+            for index, konu in st.session_state.data["konular"]:
                 with st.status(f"🔍 **{konu}** için makale ve video araştırılıyor...", expanded=True) as durum:
                     try:
                         rapor = ajan_calistirici.invoke({"input": f"Lütfen şu konu için 2 akademik makale ve 1 adet YouTube eğitim videosu bul: {konu}"})["output"]
@@ -213,7 +214,11 @@ else:
                     except Exception as e:
                         durum.update(label=f"❌ **{konu}** araması başarısız", state="error")
                         st.session_state.data["raporlar"][konu] = f"❌ Hata: {str(e)}"
-            
+
+                # Eğer bu son konu değilse diğerine geçmeden önce 5 saniye bekle
+                if index < len(st.session_state.data["konular"]) - 1:
+                    time.sleep(5)
+
             # Road Map
             with st.status("🗓️ Kaynaklar sentezleniyor ve 2 Haftalık Program oluşturuluyor...", expanded=True) as durum:
                 try:
