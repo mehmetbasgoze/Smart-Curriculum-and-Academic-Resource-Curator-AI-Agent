@@ -24,13 +24,11 @@ if 'data' not in st.session_state:
         "seviye": None,
         "konular": [],
         "hazir": False,
-        "raporlar": {},           # Ajanın bulduğu sonuçları hafızada tutar
-        "yol_haritasi": None,     # Çalışma programını hafızada tutar
-        "arama_tamamlandi": False # İndirme butonunu göstermek için tetikleyici
+        "raporlar": {},           
+        "haftalik_plan": None,    
+        "arama_tamamlandi": False 
     }
 
-# BELLEK (CACHING) 
-# Aynı metin gelirse LLM'i tekrar çalıştırma
 @st.cache_data(show_spinner=False)
 def ai_analiz_getir(metin):
     return ajan_beyni.mufredati_analiz_et(metin)
@@ -40,7 +38,6 @@ def ai_analiz_getir(metin):
 # ==========================================
 with st.sidebar:
     theme.sidebar_logo_goster()
-
     theme.sidebar_bolum_baslik("SİSTEM DURUMU")
     st.markdown('<div class="sidebar-chip">● Sistem Aktif</div>', unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -55,15 +52,14 @@ with st.sidebar:
         ("1", "PDF müfredatınızı yükleyin"),
         ("2", "Analizi başlatın"),
         ("3", "Otonom araştırmayı çalıştırın"),
-        ("4", "Çalışma Programınızı indirin"),
+        ("4", "2 Haftalık Programınızı indirin"),
     ])
 
     st.markdown("<br>", unsafe_allow_html=True)
     theme.gradient_ayirici_goster()
 
-    # Sıfırlama Butonu: Belleği de temizler
     if st.button("🔄 Yeni Müfredat Yükle", use_container_width=True):
-        st.session_state.data = {"seviye": None, "konular": [], "hazir": False, "raporlar": {}, "arama_tamamlandi": False}
+        st.session_state.data = {"seviye": None, "konular": [], "hazir": False, "raporlar": {}, "haftalik_plan": None, "arama_tamamlandi": False}
         st.rerun()
 
     theme.sidebar_alt_bilgi()
@@ -94,20 +90,14 @@ if not st.session_state.data["hazir"]:
                 with st.status("Müfredat İşleniyor...", expanded=True) as durum:
                     try:
                         st.write("📄 PDF metne dönüştürülüyor...")
-                        
-                        # --- FIX BAŞLANGICI ---
                         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
                             tmp.write(file.read())
-                            tmp.flush() # Veriyi RAM'den fiziksel diske yazılması
+                            tmp.flush()
                             gecici_yol = tmp.name
                         
-                        # Dosya tamamen kaydedilip kapatıldıktan sonra motora gönder
                         metin = pdf_motoru.mufredat_metnini_cikar(gecici_yol)
-                        # --- FIX BİTİŞİ ---
-
                         st.write("🧠 Yapay zeka seviye ve hedefleri belirliyor (Bellek kontrol ediliyor)...")
                         
-                        # Bellek fonksiyonunu çağırıyoruz
                         seviye, konular = ai_analiz_getir(metin)
 
                         st.session_state.data.update({
@@ -122,7 +112,6 @@ if not st.session_state.data["hazir"]:
                         durum.update(label="❌ Hata Oluştu", state="error", expanded=True)
                         st.error(str(e))
                     finally:
-                        # İşlem bitince sunucuda yer kaplamaması için geçici dosyaların silinmesi
                         if 'gecici_yol' in locals() and os.path.exists(gecici_yol):
                             os.remove(gecici_yol)
         else:
@@ -130,7 +119,7 @@ if not st.session_state.data["hazir"]:
             theme.ozellik_listesi_goster([
                 ("🎯", "Konu Çıkarımı", "En kritik araştırma konularını belirler"),
                 ("📚", "Çok Yönlü Kaynaklar", "Makaleler ve YouTube eğitim videoları"),
-                ("🗓️", "Akademik Yol Haritası", "Kaynaklara göre çalışma programı çıkarır"), # Metin güncellendi
+                ("🗓️", "Akademik Plan", "Kaynaklara göre 2 haftalık program çıkarır"), 
                 ("💾", "Dışa Aktarma", "Rehberi metin dosyası (.txt) olarak indirme imkanı"),
             ])
 
@@ -164,21 +153,25 @@ else:
             theme.bolum_badge_goster("📚 Akademik Okuma ve İzleme Rehberiniz")
             st.success("✅ Tüm otonom araştırmalar ve çalışma programı tamamlandı. Raporunuzu aşağıdan indirebilirsiniz.")
             
-            # Metin dosyasının içeriğini hazırlıyoruz
             tam_rapor_txt = f"{'='*60}\n  {st.session_state.data['seviye']} Seviye - Akademik Rehber\n{'='*60}\n\n"
             
             for konu in st.session_state.data["konular"]:
                 icerik = st.session_state.data["raporlar"].get(konu, "İçerik bulunamadı.")
-                
-                # Ekrana bas
                 theme.sonuc_kart_ust_goster(konu)
                 st.markdown(icerik)
                 theme.sonuc_kart_alt_kapat()
-                
-                # İndirilecek dosyaya ekle
                 tam_rapor_txt += f"--- {konu} ---\n{icerik}\n\n{'─'*40}\n\n"
             
-            # Sihirli İndirme Butonu
+            # DÜZELTME: Ekranda 2 Haftalık Programı gösterme bloku eklendi
+            st.divider()
+            theme.sonuc_kart_ust_goster("🗓️ 2 Haftalık Akademik Gelişim Planı")
+            st.markdown(st.session_state.data["haftalik_plan"])
+            theme.sonuc_kart_alt_kapat()
+            
+            # DÜZELTME: TXT dosyasına programın eklenmesi
+            tam_rapor_txt += f"{'='*60}\n  2 HAFTALIK ÇALIŞMA PROGRAMI\n{'='*60}\n\n"
+            tam_rapor_txt += str(st.session_state.data["haftalik_plan"]) + "\n"
+            
             st.markdown("<br>", unsafe_allow_html=True)
             st.download_button(
                 label="📥 Tüm Rehberi ve Programı İndir (.txt)",
@@ -187,7 +180,6 @@ else:
                 mime="text/plain",
                 use_container_width=True
             )
-
 
         # EĞER BUTONA BASILDIYSA AJANLARI ÇALIŞTIR
         elif baslat_butonu:
@@ -222,14 +214,14 @@ else:
                         durum.update(label=f"❌ **{konu}** araması başarısız", state="error")
                         st.session_state.data["raporlar"][konu] = f"❌ Hata: {str(e)}"
             
-            # 2. Kaynaklar Bitince Yol Haritası (Road Map) Çıkar
-            with st.status("🗓️ Kaynaklar sentezleniyor ve Çalışma Programı oluşturuluyor...", expanded=True) as durum:
+            # Road Map
+            with st.status("🗓️ Kaynaklar sentezleniyor ve 2 Haftalık Program oluşturuluyor...", expanded=True) as durum:
                 try:
-                    yol_haritasi = ajan_beyni.calisma_programi_olustur(st.session_state.data["raporlar"], st.session_state.data["seviye"])
-                    st.session_state.data["yol_haritasi"] = yol_haritasi
-                    durum.update(label="✅ Çalışma Programı Hazırlandı", state="complete", expanded=False)
+                    plan = ajan_beyni.haftalik_plan_olustur(st.session_state.data["raporlar"], st.session_state.data["seviye"])
+                    st.session_state.data["haftalik_plan"] = plan
+                    durum.update(label="✅ Program Hazırlandı", state="complete", expanded=False)
                 except Exception as e:
-                    st.session_state.data["yol_haritasi"] = f"Program oluşturulamadı: {str(e)}"
+                    st.session_state.data["haftalik_plan"] = f"Program oluşturulamadı: {str(e)}"
                     durum.update(label="❌ Program oluşturma başarısız", state="error")
 
             st.session_state.data["arama_tamamlandi"] = True

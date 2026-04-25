@@ -87,38 +87,35 @@ def arama_ajani_olustur(zorluk_seviyesi):
         handle_parsing_errors=True
     )
 
-def calisma_programi_olustur(raporlar_dict, zorluk_seviyesi):
-    """Bulunan tüm kaynakları okuyup mantıklı bir çalışma yol haritası çıkarır."""
+def haftalik_plan_olustur(raporlar_dict, zorluk_seviyesi):
+    """Bulunan tüm kaynakları 2 haftalık bir ders programına dönüştürür."""
     llm = llm_olustur()
     
     # Tüm kaynakları tek bir metin bloğunda birleştiriyoruz
-    derlenmis_kaynaklar = ""
+    kaynak_metni = ""
     for konu, icerik in raporlar_dict.items():
-        derlenmis_kaynaklar += f"\n--- {konu} ---\n{icerik}\n"
+        kaynak_metni += f"\n--- KONU: {konu} ---\n{icerik}\n"
         
-    danisman_prompt = f"""Sen uzman bir akademik mentör ve eğitim planlayıcısısın. 
-    Öğrencinin seviyesi: {zorluk_seviyesi}.
+    mentor_prompt = f"""Sen kıdemli bir akademik mentörsün. 
+    Öğrenci Seviyesi: {zorluk_seviyesi} (Yüksek Lisans Seviyesi).
     
-    Aşağıda, öğrencinin çalışması gereken konular ve bu konular için yapay zeka tarafından özel olarak bulunmuş akademik makaleler ve eğitici YouTube videoları bulunmaktadır.
+    Aşağıda 3 farklı ana konu için bulunan akademik makaleler ve YouTube videoları yer almaktadır:
+    {kaynak_metni}
     
-    Görevin: Bu kaynakları mantıklı bir pedagojik sıraya koyarak, adım adım bir "Çalışma Programı (Road Map)" oluşturmak.
-    - Hangi gün/adımda hangi makalenin okunması gerektiğini,
-    - Hangi videonun konuyu pekiştirmek için makaleden önce veya sonra izlenmesi gerektiğini planla.
-    - {zorluk_seviyesi} seviyesindeki bir öğrencinin bilişsel yükünü hesaba katarak programı hazırla.
+    Görevin: Bu kaynakları kullanarak daha yoğun ve odaklı 2 HAFTALIK, detaylı bir 'Haftalık Ders Programı' hazırlamak.
+    1. Her haftayı bir ana hedefe ayır (Toplam 2 Hafta).
+    2. Hangi gün hangi makalenin okunacağını ve hangi videonun izleneceğini belirt.
+    3. Makale okumalarından sonra videoların 'pekiştirici' olarak kullanılmasını sağla.
+    4. Programı bir tablo veya çok düzenli bir liste formatında, profesyonel bir dille hazırla.
     
-    Bulunan Kaynaklar:
-    {derlenmis_kaynaklar}
-    
-    Çıktını sadece programı içerecek şekilde, Markdown formatında, şık ve motive edici bir dille ver. Ekstra giriş veya çıkış cümleleri kullanma.
+    Yanıtını doğrudan programla başlat, giriş/çıkış cümleleri kurma.
     """
     
     try:
-        response = llm.invoke(danisman_prompt)
+        response = llm.invoke(mentor_prompt)
         content = response.content
-        
-        # Liste veya metin kontrolü
         if isinstance(content, list):
             return "".join([p.get('text', '') if isinstance(p, dict) else str(p) for p in content]).strip()
         return str(content).strip()
     except Exception as e:
-        return f"Yol haritası oluşturulurken hata meydana geldi: {str(e)}"
+        return f"Plan oluşturulamadı: {str(e)}"
