@@ -22,17 +22,14 @@ theme.css_uygula()
 # ==========================================
 if 'data' not in st.session_state:
     st.session_state.data = {
+        "ders_adi": None,
         "seviye": None,
-        "konular": [],
+        "alt_konular": [],
         "hazir": False,
         "raporlar": {},           
-        "haftalik_plan": None,    
+        "ders_notu": None,
         "arama_tamamlandi": False 
     }
-
-@st.cache_data(show_spinner=False)
-def ai_analiz_getir(metin):
-    return ajan_beyni.mufredati_analiz_et(metin)
 
 # ==========================================
 # 3. YAN MENÜ (SIDEBAR)
@@ -45,28 +42,34 @@ with st.sidebar:
 
     if st.session_state.data["hazir"]:
         theme.sidebar_analiz_durumu_goster(
+            st.session_state.data["ders_adi"],
             st.session_state.data["seviye"],
-            len(st.session_state.data["konular"])
+            len(st.session_state.data["alt_konular"])
         )
 
     theme.sidebar_adim_listesi([
-        ("1", "PDF müfredatınızı yükleyin"),
-        ("2", "Analizi başlatın"),
-        ("3", "Otonom araştırmayı çalıştırın"),
-        ("4", "1 Haftalık Programınızı indirin"), # DÜZELTİLDİ
+        ("1", "Ders müfredatını (PDF) yükleyin"),
+        ("2", "Ders adı tespiti ve internet araştırması"),
+        ("3", "Alt konulara ayırma (temelden ileriye)"),
+        ("4", "Her konu için kaynak taraması"),
+        ("5", "Kapsamlı Ders Notu sentezi ve indirme"),
     ])
 
     st.markdown("<br>", unsafe_allow_html=True)
     theme.gradient_ayirici_goster()
 
-    if st.button("🔄 Yeni Müfredat Yükle", use_container_width=True):
-        st.session_state.data = {"seviye": None, "konular": [], "hazir": False, "raporlar": {}, "haftalik_plan": None, "arama_tamamlandi": False}
+    if st.button("🔄 Yeni Ders Yükle", use_container_width=True):
+        st.session_state.data = {
+            "ders_adi": None, "seviye": None, "alt_konular": [], 
+            "hazir": False, "raporlar": {}, "ders_notu": None, 
+            "arama_tamamlandi": False
+        }
         st.rerun()
 
     theme.sidebar_alt_bilgi()
 
 # ==========================================
-# 4. ANA AKIŞ - ADIM 1: YÜKLEME VE ANALİZ
+# 4. ANA AKIŞ - ADIM 1: PDF YÜKLEME VE ANALİZ
 # ==========================================
 if not st.session_state.data["hazir"]:
     theme.hero_baslik_goster()
@@ -77,9 +80,9 @@ if not st.session_state.data["hazir"]:
         st.markdown("<br>", unsafe_allow_html=True)
 
         file = st.file_uploader(
-            "PDF dosyanızı sürükleyin veya tıklayarak seçin",
+            "Ders müfredatını içeren PDF dosyasını seçin",
             type=["pdf"],
-            help="Yalnızca PDF formatı desteklenmektedir."
+            help="Sistem PDF'den ders adını tespit edip, internetten detaylı müfredat araştırması yapacaktır."
         )
 
         if file:
@@ -87,26 +90,44 @@ if not st.session_state.data["hazir"]:
             theme.dosya_bilgi_satirlari_goster(file.name, dosya_kb)
             st.markdown("<br>", unsafe_allow_html=True)
 
-            if st.button("Analizi Başlat", use_container_width=True):
-                with st.status("Müfredat İşleniyor...", expanded=True) as durum:
+            if st.button("Müfredat Analizini Başlat", use_container_width=True):
+                with st.status("Ders İçeriği Analiz Ediliyor...", expanded=True) as durum:
                     try:
+                        # --- ADIM 1: PDF'yi Oku ---
                         st.write("📄 PDF metne dönüştürülüyor...")
                         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
                             tmp.write(file.read())
                             tmp.flush()
                             gecici_yol = tmp.name
                         
-                        metin = pdf_motoru.mufredat_metnini_cikar(gecici_yol)
-                        st.write("🧠 Yapay zeka seviye ve hedefleri belirliyor (Bellek kontrol ediliyor)...")
+                        pdf_metni = pdf_motoru.mufredat_metnini_cikar(gecici_yol)
                         
-                        seviye, konular = ai_analiz_getir(metin)
+                        # --- ADIM 2: Ders Adını Tespit Et ---
+                        st.write("🧠 Yapay zeka ders adını tespit ediyor...")
+                        ders_adi, seviye = ajan_beyni.ders_adini_tespit_et(pdf_metni)
+                        st.write(f"✅ Tespit edilen ders: **{ders_adi}** ({seviye})")
+                        
+                        # --- ADIM 3: İnternette Ders Müfredatı Ara ---
+                        st.write(f"🔍 İnternette '{ders_adi}' dersi için müfredat içerikleri aranıyor...")
+                        web_sonuclari = ajan_beyni.ders_icerigini_internetten_ara(ders_adi)
+                        
+                        if web_sonuclari:
+                            st.write("✅ İnternetten ders içerikleri bulundu.")
+                        else:
+                            st.write("⚠️ Web sonuçları sınırlı, PDF içeriği ağırlıkla kullanılacak.")
+                        
+                        # --- ADIM 4: Alt Konulara Ayır ---
+                        st.write("📋 Ders temelden ileriye doğru alt konulara ayrılıyor...")
+                        alt_konular = ajan_beyni.alt_konulara_ayir(ders_adi, web_sonuclari, pdf_metni, seviye)
+                        st.write(f"✅ **{len(alt_konular)}** alt konu belirlendi (temelden ileriye sıralı).")
 
                         st.session_state.data.update({
+                            "ders_adi": ders_adi,
                             "seviye": seviye,
-                            "konular": konular,
+                            "alt_konular": alt_konular,
                             "hazir": True
                         })
-                        durum.update(label="✅ Analiz Tamamlandı!", state="complete", expanded=False)
+                        durum.update(label=f"✅ Analiz Tamamlandı: {ders_adi}", state="complete", expanded=False)
                         st.rerun()
 
                     except Exception as e:
@@ -118,130 +139,136 @@ if not st.session_state.data["hazir"]:
         else:
             st.markdown("<br>", unsafe_allow_html=True)
             theme.ozellik_listesi_goster([
-                ("🎯", "Konu Çıkarımı", "En kritik araştırma konularını belirler"),
-                ("📚", "Çok Yönlü Kaynaklar", "Makaleler ve YouTube eğitim videoları"),
-                ("🗓️", "Akademik Plan", "Kaynaklara göre 1 haftalık program çıkarır"), # DÜZELTİLDİ
-                ("💾", "Dışa Aktarma", "Rehberi metin dosyası (.txt) olarak indirme imkanı"),
+                ("🎯", "Otomatik Ders Tespiti", "PDF'den ders adını AI ile tespit eder, internet araştırması yapar"),
+                ("📋", "Pedagojik Alt Konu Sıralaması", "Dersi temelden ileriye 8-12 alt konuya ayırır"),
+                ("📚", "Seviyeye Uygun Kaynaklar", "Her alt konu için seviyeye uygun makale ve videolar bulur"),
+                ("✍️", "Kapsamlı Ders Notu", "Tüm kaynakları sentezleyerek profesyonel bir ders notu oluşturur"),
             ])
 
 # ==========================================
-# 5. ANA AKIŞ - ADIM 2: ARAŞTIRMA VE SONUÇ
+# 5. ANA AKIŞ - ADIM 2: ARAŞTIRMA VE SENTEZ
 # ==========================================
 else:
-    theme.sonuc_sayfasi_baslik_goster()
+    theme.sonuc_sayfasi_baslik_goster(st.session_state.data["ders_adi"])
     col_ozet, col_arastirma = st.columns([1, 2.2], gap="large")
 
     with col_ozet:
-        theme.bolum_badge_goster("📊 Analiz Raporu")
-        st.metric(label="🎓 Akademik Seviye", value=st.session_state.data["seviye"])
+        theme.bolum_badge_goster("📊 Ders Yapısı")
+        st.metric(label="📖 Ders", value=st.session_state.data["ders_adi"])
+        st.metric(label="🎓 Seviye", value=st.session_state.data["seviye"])
         st.markdown("<br>", unsafe_allow_html=True)
-        theme.konu_listesi_goster(st.session_state.data["konular"])
+        theme.konu_listesi_goster(st.session_state.data["alt_konular"])
         st.markdown("<br>", unsafe_allow_html=True)
         theme.gradient_ayirici_goster()
 
-        baslat_butonu = st.button("🌐 Otonom Araştırmayı Başlat", type="primary", use_container_width=True, disabled=st.session_state.data["arama_tamamlandi"])
-
-        st.markdown("""
-        <div style="margin-top: 0.8rem; font-size: 0.8rem; color: #a1a1aa; text-align: center;">
-            Her konu için seçilen ajanlar üzerinden<br>akademik makale ve video taraması başlatılacaktır.
-        </div>
-        """, unsafe_allow_html=True)
+        baslat_butonu = st.button(
+            "🌐 Kaynak Bul ve Ders Notu Yaz", 
+            type="primary", 
+            use_container_width=True, 
+            disabled=st.session_state.data["arama_tamamlandi"]
+        )
 
     with col_arastirma:
         
-        # EĞER ARAMA BİTTİYSE STATİK EKRANI VE İNDİRME BUTONUNU GÖSTER
         if st.session_state.data["arama_tamamlandi"]:
-            theme.bolum_badge_goster("📚 Akademik Okuma ve İzleme Rehberiniz")
-            st.success("✅ Tüm otonom araştırmalar ve çalışma programı tamamlandı. Raporunuzu aşağıdan indirebilirsiniz.")
+            theme.bolum_badge_goster("🎓 Yapay Zeka Tarafından Sentezlenen Ders Notu")
+            st.success("✅ Ders notunuz ve kaynakçanız hazırlandı. Aşağıdan inceleyebilir ve indirebilirsiniz.")
             
-            tam_rapor_txt = f"{'='*60}\n  {st.session_state.data['seviye']} Seviye - Akademik Rehber\n{'='*60}\n\n"
-            
-            for konu in st.session_state.data["konular"]:
-                icerik = st.session_state.data["raporlar"].get(konu, "İçerik bulunamadı.")
-                theme.sonuc_kart_ust_goster(konu)
-                st.markdown(icerik)
-                theme.sonuc_kart_alt_kapat()
-                tam_rapor_txt += f"--- {konu} ---\n{icerik}\n\n{'─'*40}\n\n"
-            
-            st.divider()
-            theme.sonuc_kart_ust_goster("🗓️ 1 Haftalık Akademik Gelişim Planı") # DÜZELTİLDİ
-            
-            # Programın ekranda daha şık görünmesi için Markdown bloğuna alıyoruz
-            st.markdown(f"```text\n{st.session_state.data['haftalik_plan']}\n```") 
+            # --- 1. DERS NOTU (ANA ÇIKTI) ---
+            theme.sonuc_kart_ust_goster("✍️ Kapsamlı Ders Çalışma Notu")
+            st.markdown(st.session_state.data["ders_notu"])
             theme.sonuc_kart_alt_kapat()
+
+            # --- 2. REFERANS KAYNAKLAR (DETAYLAR) ---
+            st.divider()
+            theme.bolum_badge_goster("📚 Kullanılan Referanslar ve Kaynaklar")
             
-            tam_rapor_txt += f"{'='*60}\n  1 HAFTALIK ÇALIŞMA PROGRAMI\n{'='*60}\n\n" # DÜZELTİLDİ
-            tam_rapor_txt += str(st.session_state.data["haftalik_plan"]) + "\n"
+            ders_adi = st.session_state.data['ders_adi']
+            seviye = st.session_state.data['seviye']
+            
+            tam_rapor_txt = f"{'='*60}\n  {ders_adi} - {seviye} Seviyesi İçin Akademik Ders Notu\n{'='*60}\n\n"
+            tam_rapor_txt += f"BÖLÜM 1: DERS NOTU\n{'-'*30}\n{st.session_state.data['ders_notu']}\n\n"
+            tam_rapor_txt += f"BÖLÜM 2: KAYNAKÇA VE REFERANSLAR\n{'-'*30}\n\n"
+
+            for i, konu in enumerate(st.session_state.data["alt_konular"]):
+                icerik = st.session_state.data["raporlar"].get(konu, "İçerik bulunamadı.")
+                
+                # Seviye etiketi belirle
+                oran = (i + 1) / len(st.session_state.data["alt_konular"])
+                if oran <= 0.33:
+                    seviye_etiketi = "🟢 Temel"
+                elif oran <= 0.66:
+                    seviye_etiketi = "🟡 Orta"
+                else:
+                    seviye_etiketi = "🔴 İleri"
+                
+                with st.expander(f"{seviye_etiketi} | {i+1}. {konu}"):
+                    st.markdown(icerik)
+                tam_rapor_txt += f"--- {i+1}. {konu} ({seviye_etiketi}) ---\n{icerik}\n\n"
             
             st.markdown("<br>", unsafe_allow_html=True)
             st.download_button(
-                label="📥 Tüm Rehberi ve Programı İndir (.txt)",
+                label="📥 Tüm Ders Notunu ve Kaynakçayı İndir (.txt)",
                 data=tam_rapor_txt,
-                file_name="akademik_rehber_ve_program.txt",
+                file_name=f"{ders_adi.replace(' ', '_')}_ders_notu.txt",
                 mime="text/plain",
                 use_container_width=True
             )
 
-        # EĞER BUTONA BASILDIYSA AJANLARI ÇALIŞTIR
         elif baslat_butonu:
-            theme.bolum_badge_goster("📚 Akademik Okuma ve İzleme Rehberiniz")
-            st.markdown("""
-            <p style="color: #64748B; font-size: 0.88rem; margin-bottom: 1.2rem;">
-                Yapay zeka ajan her konu için bağımsız araştırma yapıyor.
-                Sonuçlar tamamlandıkça aşağıda görünecektir.
-            </p>
-            """, unsafe_allow_html=True)
+            theme.bolum_badge_goster("📚 Kaynaklar Taranıyor")
+            
+            ders_adi = st.session_state.data["ders_adi"]
+            alt_konular = st.session_state.data["alt_konular"]
+            toplam = len(alt_konular)
 
-            ajan_calistirici = ajan_beyni.arama_ajani_olustur(st.session_state.data["seviye"])
-
-            # 1. Kaynakları Bul
-            # 1. Kaynakları Bul
-            for index, konu in enumerate(st.session_state.data["konular"]):
-                with st.status(f"🔍 **{konu}** için makale ve video araştırılıyor...", expanded=True) as durum:
+            # --- Adım 1: Her alt konu için kaynak bul ---
+            for index, konu in enumerate(alt_konular):
+                sira = index + 1
+                
+                # Seviye etiketi
+                oran = sira / toplam
+                if oran <= 0.33:
+                    seviye_etiketi = "Temel"
+                elif oran <= 0.66:
+                    seviye_etiketi = "Orta"
+                else:
+                    seviye_etiketi = "İleri"
+                
+                with st.status(f"🔍 [{seviye_etiketi}] **{sira}/{toplam} - {konu}** için kaynaklar aranıyor...", expanded=True) as durum:
                     try:
-                        # Önce normal ajanı (İnternete bağlanan) deniyoruz
-                        rapor = ajan_calistirici.invoke({"input": f"Lütfen şu konu için 2 akademik makale ve 1 adet YouTube eğitim videosu bul: {konu}"})["output"]
-                        
-                        if isinstance(rapor, list):
-                            temiz_metin = "".join([p.get('text', '') if isinstance(p, dict) else str(p) for p in rapor])
-                        else:
-                            temiz_metin = rapor
-
-                        durum.update(label=f"✅ **{konu}** tamamlandı", state="complete", expanded=False)
-
+                        rapor = ajan_beyni.konu_icin_kaynak_bul(ders_adi, konu, sira, toplam)
+                        durum.update(label=f"✅ **{sira}/{toplam} - {konu}** tamamlandı", state="complete", expanded=False)
                     except Exception as e:
-                        # --- SENIOR B PLANI (DEMO KURTARICI) ---
-                        # Eğer DuckDuckGo veya YouTube çökerse, videoda hata basmak yerine LLM'in kendi hafızasını kullan!
-                        yedek_llm = ajan_beyni.llm_olustur()
-                        yedek_prompt = f"Sen bir akademik asistansın. İnternet arama motorum şu an çöktü. Görevin '{konu}' konusu için tamamen gerçek, bilinen en popüler 2 akademik makale başlığını ve 1 YouTube eğitim videosu başlığını önermek. Çıktıyı sanki internetten bulmuşsun gibi aynı şablonda (**📚 Akademik Makaleler:** ve **🎥 Önerilen Eğitim Videosu:**) ver."
-                        
-                        yedek_yanit = yedek_llm.invoke(yedek_prompt).content
-                        temiz_metin = str(yedek_yanit).strip()
-                        
-                        # Durumu hata yerine "Yedek Bellek" ile çözüldü olarak gösteriyoruz
-                        durum.update(label=f"✅ **{konu}** tamamlandı (Yedek Sistem Devrede)", state="complete", expanded=False)
+                        rapor = f"Kaynak bulunamadı: {str(e)}"
+                        durum.update(label=f"⚠️ **{konu}** - kısmi sonuç", state="complete", expanded=False)
 
-                    # Sonucu hafızaya al ve ekrana bas (İster internetten bulsun, ister yedek hafızadan)
-                    st.session_state.data["raporlar"][konu] = temiz_metin
-                    theme.sonuc_kart_ust_goster(konu)
-                    st.markdown(temiz_metin)
-                    theme.sonuc_kart_alt_kapat()
+                    st.session_state.data["raporlar"][konu] = rapor
 
-                # Eğer bu son konu değilse diğerine geçmeden önce 5 saniye bekle
-                if index < len(st.session_state.data["konular"]) - 1:
-                    time.sleep(5)
+                if index < toplam - 1:
+                    time.sleep(3)  # API rate limit koruması
 
-            # Road Map
-            with st.status("🗓️ Kaynaklar sentezleniyor ve 1 Haftalık Program oluşturuluyor...", expanded=True) as durum: # DÜZELTİLDİ
-                try:
-                    plan = ajan_beyni.haftalik_plan_olustur(st.session_state.data["raporlar"], st.session_state.data["seviye"])
-                    st.session_state.data["haftalik_plan"] = plan
-                    durum.update(label="✅ Program Hazırlandı", state="complete", expanded=False)
-                except Exception as e:
-                    st.session_state.data["haftalik_plan"] = f"Program oluşturulamadı: {str(e)}"
-                    durum.update(label="❌ Program oluşturma başarısız", state="error")
-
-            st.session_state.data["arama_tamamlandi"] = True
+            # --- Adım 2: Ders Notunu Bölüm Bölüm Sentezle ---
+            not_status = st.status("✍️ Ders Notu bölüm bölüm oluşturuluyor...", expanded=True)
+            
+            try:
+                def ilerleme_goster(bolum_no, toplam, konu):
+                    not_status.write(f"📝 Bölüm {bolum_no}/{toplam}: **{konu}** yazılıyor...")
+                
+                not_metni = ajan_beyni.ders_notu_olustur(
+                    st.session_state.data["ders_adi"],
+                    st.session_state.data["raporlar"], 
+                    st.session_state.data["seviye"],
+                    progress_callback=ilerleme_goster
+                )
+                st.session_state.data["ders_notu"] = not_metni
+                st.session_state.data["arama_tamamlandi"] = True
+                not_status.update(label="✅ Ders Notu Sentezlendi (Tüm Bölümler)", state="complete", expanded=False)
+            except Exception as e:
+                st.session_state.data["ders_notu"] = f"Not oluşturulamadı: {str(e)}"
+                st.session_state.data["arama_tamamlandi"] = True
+                not_status.update(label="❌ Not oluşturma başarısız", state="error")
+            
             st.rerun()
 
         else:
