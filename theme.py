@@ -635,17 +635,20 @@ def sidebar_bolum_baslik(metin: str):
     )
 
 
-def sidebar_analiz_durumu_goster(seviye: str, konu_sayisi: int):
+def sidebar_analiz_durumu_goster(ders_adi: str, seviye: str, konu_sayisi: int):
     """Sidebar Analiz Durumu Kartı"""
     sidebar_bolum_baslik("Analiz Özeti")
     st.markdown(f"""
     <div style="background: rgba(24,24,27,0.5); border: 1px solid rgba(255,255,255,0.06);
                 border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem;">
+        <div style="font-size: 0.75rem; color: #a1a1aa; margin-bottom: 0.2rem;">Tespit Edilen Ders</div>
+        <div style="font-size: 1.05rem; font-weight: 600; color: #fafafa;">{ders_adi}</div>
+        <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 0.75rem 0;"></div>
         <div style="font-size: 0.75rem; color: #a1a1aa; margin-bottom: 0.2rem;">Akademik Seviye</div>
         <div style="font-size: 1.05rem; font-weight: 600; color: #fafafa;">{seviye}</div>
         <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 0.75rem 0;"></div>
-        <div style="font-size: 0.75rem; color: #a1a1aa; margin-bottom: 0.2rem;">Hedef Konular</div>
-        <div style="font-size: 1.05rem; font-weight: 600; color: #fafafa;">{konu_sayisi} Konu Saptandı</div>
+        <div style="font-size: 0.75rem; color: #a1a1aa; margin-bottom: 0.2rem;">Alt Konular</div>
+        <div style="font-size: 1.05rem; font-weight: 600; color: #fafafa;">{konu_sayisi} Alt Konu (Temelden İleriye)</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -683,7 +686,7 @@ def hero_baslik_goster():
             <span class="text-gradient">Analitik Motoru</span>
         </h1>
         <p style="color: #a1a1aa; font-size: 1.1rem; margin-top: 1.25rem; font-weight: 400; max-width: 600px; margin-left: auto; margin-right: auto;">
-            Syllabus belgenizi saniyeler içinde analiz edin, akademik seviyeyi belirleyin ve otonom araştırma ajanlarıyla anında literatür taraması yapın.
+            Ders müfredatınızı yükleyin. Sistem dersi tespit edip internetten içerik arayacak, temelden ileriye alt konulara ayıracak ve her konu için kaynaklar bularak kapsamlı bir ders notu oluşturacak.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -729,16 +732,16 @@ def ozellik_listesi_goster(ozellikler: list):
         """, unsafe_allow_html=True)
 
 
-def sonuc_sayfasi_baslik_goster():
+def sonuc_sayfasi_baslik_goster(ders_adi: str = ""):
     """Analiz sonuçları ana sayfa başlık"""
-    st.markdown("""
+    st.markdown(f"""
     <div class="animate-fade-up" style="padding: 1rem 0 2rem 0;">
         <div class="badge">Analiz Tamamlandı</div>
         <h1 style="font-size: 2.25rem; font-weight: 800; color: #fafafa; margin: 0;">
-            Araştırma Başlatmaya Hazır
+            {ders_adi} — Kaynak Araştırması
         </h1>
         <p style="color: #a1a1aa; margin-top: 0.5rem; font-size: 0.95rem;">
-            Yapay zeka motoru müfredat verilerini optimize etti. Her konu için izole ajanları çalıştırabilirsiniz.
+            Ders temelden ileriye doğru alt konulara ayrıldı. Her konu için seviyeye uygun kaynaklar aranacak ve kapsamlı bir ders notu sentezlenecek.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -750,21 +753,38 @@ def bolum_badge_goster(etiket: str):
 
 
 def konu_listesi_goster(konular: list):
-    """Konuların listesi — her kart ayrı render edilir."""
+    """Konuların listesi — temelden ileriye doğru sıralı, seviye etiketli."""
     st.markdown(
         '<div style="font-size: 0.75rem; font-weight: 600; color: #a1a1aa; '
         'text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">'
-        'Tespit Edilen Çekirdek Konular</div>',
+        'Alt Konular (Temelden İleriye)</div>',
         unsafe_allow_html=True
     )
 
-    ikonlar = ["⚡", "🔍", "📐", "🔬", "💡"]
+    toplam = len(konular)
     for i, konu in enumerate(konular):
-        ikon = ikonlar[i % len(ikonlar)]
+        sira = i + 1
+        oran = sira / toplam
+        if oran <= 0.33:
+            seviye_renk = "#10b981"  # Yeşil - Temel
+            seviye_etiket = "Temel"
+        elif oran <= 0.66:
+            seviye_renk = "#f59e0b"  # Sarı - Orta
+            seviye_etiket = "Orta"
+        else:
+            seviye_renk = "#ef4444"  # Kırmızı - İleri
+            seviye_etiket = "İleri"
+        
         st.markdown(f"""
         <div class="item-card" style="padding: 0.75rem 1rem;">
-            <div class="item-icon" style="width: 28px; height: 28px; font-size: 0.9rem;">{ikon}</div>
-            <div class="item-title">{konu}</div>
+            <div style="width: 28px; height: 28px; font-size: 0.75rem; font-weight: 700;
+                        display: flex; align-items: center; justify-content: center;
+                        background: rgba(255,255,255,0.08); border-radius: 6px;
+                        color: {seviye_renk}; flex-shrink: 0; border: 1px solid {seviye_renk}33;">{sira}</div>
+            <div style="flex: 1;">
+                <div class="item-title">{konu}</div>
+                <div style="font-size: 0.7rem; color: {seviye_renk}; margin-top: 0.15rem; font-weight: 500;">{seviye_etiket}</div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
