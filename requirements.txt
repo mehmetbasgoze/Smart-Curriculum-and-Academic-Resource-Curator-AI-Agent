@@ -3,5 +3,5 @@ langchain
 langchain-google-vertexai
 langchain-community
 pypdf
-duckduckgo-search
+ddgs
 youtube-search
