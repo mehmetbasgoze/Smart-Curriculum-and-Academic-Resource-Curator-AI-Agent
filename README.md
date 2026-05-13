@@ -2,13 +2,13 @@
 
 # 🎓 Smart Curriculum & Academic Resource Curator AI Agent
 
-**Yapay zeka destekli otonom müfredat analiz ve akademik kaynak küratörlüğü sistemi**
+**Yapay zeka destekli otonom müfredat analiz, ders notu sentezi ve akademik kaynak küratörlüğü sistemi**
 
 <br/>
 
 ---
 
-*PDF formatındaki ders müfredatlarını yapay zeka ile analiz eden, akademik seviye belirleyen ve otonom araştırma ajanları aracılığıyla ilgili akademik makaleler ile YouTube eğitim videolarını otomatik olarak küratörleyen tam yığın (full-stack) bir AI Agent uygulamasıdır.*
+*PDF formatındaki ders müfredatlarını yapay zeka ile analiz eden, ders adını tespit ederek web taramasıyla içeriği zenginleştiren, konuları pedagojik olarak temelden ileriye sıralayan ve her alt konu için akademik kaynak/videolar bularak profesyonel ders notları sentezleyen tam yığın (full-stack) bir AI Agent uygulamasıdır.*
 
 </div>
 
@@ -26,52 +26,45 @@
 - [Kullanım](#-kullanım)
 - [Proje Yapısı](#-proje-yapısı)
 - [Yapılandırma](#-yapılandırma)
-- [Katkıda Bulunma](#-katkıda-bulunma)
 
 ---
 
 ## 🔭 Genel Bakış
 
-**Smart Curriculum & Academic Resource Curator AI Agent**, eğitimcilerin ve öğrencilerin ders müfredatlarını hızla analiz etmelerini sağlayan yapay zeka destekli bir otonom ajan sistemidir. Kullanıcılar PDF formatındaki müfredat belgelerini yükler; sistem müfredatın zorluk seviyesini belirler, kritik araştırma konularını çıkarır ve her konu için izole otonom ajanlar aracılığıyla hem akademik makaleler hem de YouTube eğitim videoları bulur.
+**Smart Curriculum & Academic Resource Curator AI Agent**, eğitimcilerin ve öğrencilerin ders müfredatlarını hızla analiz etmelerini sağlayan yapay zeka destekli bir otonom ajan sistemidir. Kullanıcılar PDF formatındaki müfredat belgelerini yükler; sistem dersin adını ve zorluk seviyesini otomatik tespit eder, internetten ek müfredat araması yapar ve konuları 8-12 alt başlığa (temelden ileriye doğru) ayırır. Son olarak her konu için akademik kaynaklar ve YouTube videoları bularak baştan sona profesyonel bir **Ders Çalışma Notu** sentezler.
 
 ### Neden Bu Proje?
 
 | Problem | Çözüm |
 |---------|-------|
-| Müfredat analizi saatler sürer | AI ile saniyeler içinde otomatik analiz |
-| Kaynak bulma zahmetlidir | Otonom ajanlar ile paralel web taraması |
-| Seviye belirleme özneldir | NLP tabanlı objektif zorluk tespiti |
-| Çoklu platform tarama gerekir | DuckDuckGo + YouTube entegre tarama |
+| Müfredat analizi saatler sürer | AI ile saniyeler içinde otomatik analiz ve internet taraması |
+| Kaynak bulma zahmetlidir | Otonom ajanlar ile paralel web ve YouTube taraması |
+| Konu sıralaması ve seviye belirleme zordur | Pedagojik olarak temelden ileriye sıralama |
+| Bilgiler dağınıktır | Tüm kaynakları sentezleyen kapsamlı ders notu üretimi |
 
 ---
 
 ## ✨ Temel Özellikler
 
-### 🧠 Akıllı Müfredat Analizi
-- PDF belgelerinden otomatik metin çıkarma (OCR değil, metin tabanlı)
-- Gemini 2.5 Flash ile zorluk seviyesi tespiti (Giriş / Orta / İleri Seviye)
-- En kritik 3 araştırma konusunun otomatik belirlenmesi
+### 🧠 Akıllı Ders Tespiti ve Yapılandırma
+- PDF belgelerinden otomatik ders adı ve zorluk seviyesi tespiti
+- Bulunan ders adı ile internette detaylı müfredat araştırması
+- Müfredatın pedagojik olarak temelden ileriye doğru 8-12 alt konuya ayrılması
 
 ### 🤖 Otonom Çoklu Ajan Sistemi
-- Her konu için bağımsız çalışan izole ajanlar
-- **DuckDuckGo** entegrasyonu ile akademik makale taraması
-- **YouTube** entegrasyonu ile eğitim videosu keşfi
-- Her konu için 2 akademik makale + 1 YouTube videosu önerisi
+- Her konu için seviyeye uygun (Temel/Orta/İleri) bağımsız kaynak araması
+- **DuckDuckGo** API ile akademik makale taraması
+- **YouTube** API ile eğitim videosu keşfi
 
-### ⚡ Sıfır Maliyetli Bellek Sistemi (Caching)
-- `@st.cache_data` ile akıllı önbellekleme
-- Aynı müfredat için tekrar API çağrısı yapılmaz
-- API kredi tasarrufu sağlar
-
-### 📥 Dışa Aktarma
-- Tüm araştırma sonuçlarını **Markdown (.md)** formatında indirme
-- Konulara göre yapılandırılmış, paylaşıma hazır akademik rehber çıktısı
+### ✍️ Kapsamlı Ders Notu Sentezi
+- Tüm alt konular için bulunan gerçek kaynakların analiz edilerek profesyonel ders notlarına dönüştürülmesi
+- Token limiti aşmamak ve uydurma kaynak (hallucination) engellemek için bölüm bölüm LLM sentezi
+- İndirilebilir tam metin (`.txt`) formatında çalışma rehberi ve kaynakça
 
 ### 🎨 Premium Arayüz
 - **Dark Glassmorphism** tasarım konsepti
-- Plus Jakarta Sans tipografisi
-- Animasyonlu geçişler ve mikro-etkileşimler
-- Tamamen responsive (mobil uyumlu) Streamlit arayüzü
+- Animasyonlu geçişler, ilerleme durum çubukları ve etkileşimli bölümler
+- Tamamen responsive Streamlit arayüzü
 
 ---
 
@@ -87,51 +80,24 @@
          ┌─────────────▼─────────────┐
          │      PDF İşleme Motoru    │
          │       (pdf_motoru.py)     │
-         │    PyPDFLoader + Metin    │
-         │    Çıkarma & Doğrulama    │
          └─────────────┬─────────────┘
                        │
          ┌─────────────▼─────────────┐
          │      Ajan Beyni (Core)    │
          │      (ajan_beyni.py)      │
          │                           │
-         │  ┌─────────────────────┐  │
-         │  │  Analiz Modülü      │  │
-         │  │  Gemini 2.5 Flash   │  │
-         │  │  Seviye & Konu      │  │
-         │  │  Çıkarımı           │  │
-         │  └─────────────────────┘  │
-         │                           │
-         │  ┌─────────────────────┐  │
-         │  │  Araştırma Ajanları │  │
-         │  │  (Tool-Calling)     │  │
-         │  │                     │  │
-         │  │  🔍 DuckDuckGo     │  │
-         │  │  🎥 YouTube Search  │  │
-         │  └─────────────────────┘  │
+         │  1. Ders Adı ve Seviye    │
+         │  2. Web'den Müfredat Ara  │
+         │  3. Konuları Bölümlendir  │
+         │  4. DDG & YouTube Arama   │
+         │  5. Ders Notu Sentezle    │
          └─────────────┬─────────────┘
                        │
          ┌─────────────▼─────────────┐
          │    Google Cloud Platform   │
          │      Vertex AI API         │
-         │    (config.py + kimlik)    │
+         │    (Gemini 2.5 Flash)      │
          └───────────────────────────┘
-```
-
-### Akış Diyagramı
-
-```
-PDF Yükleme → Metin Çıkarma → LLM Analizi → Seviye + Konular
-                                                    │
-                                    ┌───────────────┼───────────────┐
-                                    ▼               ▼               ▼
-                              Ajan: Konu 1    Ajan: Konu 2    Ajan: Konu 3
-                              (DuckDuckGo)    (DuckDuckGo)    (DuckDuckGo)
-                              (YouTube)       (YouTube)       (YouTube)
-                                    │               │               │
-                                    └───────────────┼───────────────┘
-                                                    ▼
-                                          Akademik Rehber (.md)
 ```
 
 ---
@@ -140,13 +106,12 @@ PDF Yükleme → Metin Çıkarma → LLM Analizi → Seviye + Konular
 
 | Katman | Teknoloji | Açıklama |
 |--------|-----------|----------|
-| **LLM** | Gemini 2.5 Flash | Google'ın hızlı ve güçlü dil modeli |
-| **Orkestrasyon** | LangChain | Ajan oluşturma, araç çağırma ve prompt yönetimi |
-| **Bulut** | Google Cloud Vertex AI | Model barındırma ve API erişimi |
+| **LLM** | Gemini 2.5 Flash (Vertex AI) | Güçlü dil modeli ile analiz ve sentez |
+| **Orkestrasyon** | LangChain / Özel Ajan Akışı | Prompt yönetimi ve sıralı LLM çağrıları |
+| **Bulut** | Google Cloud Platform | Model barındırma |
 | **Arayüz** | Streamlit | Hızlı prototipleme ve interaktif web uygulaması |
 | **PDF İşleme** | PyPDFLoader (LangChain) | PDF'ten metin çıkarma |
-| **Web Arama** | DuckDuckGo Search | Akademik makale taraması |
-| **Video Arama** | YouTube Search Tool | Eğitim videosu keşfi |
+| **Arama Motorları** | DuckDuckGo API, YouTube Search API | Kaynak ve video keşfi |
 | **Dil** | Python 3.10+ | Ana geliştirme dili |
 
 ---
@@ -196,7 +161,7 @@ Smart-Curriculum-and-Academic-Resource-Curator-AI-Agent/
 ├── ...
 ```
 
-> ⚠️ **Önemli:** `kimlik.json` dosyası `.gitignore` içinde tanımlıdır ve GitHub'a yüklenmez. Asla bu dosyayı paylaşmayın.
+> ⚠️ **Önemli:** `kimlik.json` dosyası `.gitignore` içinde tanımlıdır ve GitHub'a yüklenmez. Güvenliğiniz için asla bu dosyayı herkese açık alanlarda paylaşmayın.
 
 ### 5. Uygulamayı Başlatın
 
@@ -210,23 +175,20 @@ Uygulama varsayılan olarak `http://localhost:8501` adresinde açılacaktır.
 
 ## 📋 Kullanım
 
-### Adım 1 — Müfredat Yükleme
-PDF formatındaki ders izlencenizi (syllabus) sürükleyip bırakın veya dosya seçici ile yükleyin.
+### Adım 1 — Ders Müfredatını (PDF) Yükleyin
+PDF formatındaki ders izlencenizi (syllabus) yükleyin. Sistem PDF metnini çıkararak hazırlık yapar.
 
-### Adım 2 — AI Analizi Başlatma
-**"🚀 Analizi Başlat"** butonuna tıklayın. Sistem:
-- PDF'ten metni çıkarır
-- Gemini 2.5 Flash ile zorluk seviyesini belirler
-- En kritik 3 araştırma konusunu saptar
+### Adım 2 — Ders Adı Tespiti ve İnternet Araştırması
+**"Müfredat Analizini Başlat"** butonuna tıkladığınızda, sistem AI ile dersin adını tespit eder ve internet üzerinde bu derse ait daha geniş müfredat bilgilerini arar.
 
-### Adım 3 — Otonom Araştırma
-**"🌐 Otonom Araştırmayı Başlat"** butonuna tıklayın. Her konu için bağımsız bir ajan çalışır ve:
-- DuckDuckGo üzerinden 2 akademik makale bulur
-- YouTube üzerinden 1 eğitim videosu önerir
-- Kaynakların neden bu seviyeye uygun olduğunu açıklar
+### Adım 3 — Alt Konulara Ayırma
+PDF ve web sonuçları birleştirilerek, ders pedagojik bir mantıkla (temelden ileri seviyeye doğru) 8-12 alt konuya otomatik olarak bölünür.
 
-### Adım 4 — Sonuçları İndirme
-Tüm araştırma sonuçlarını yapılandırılmış bir **Markdown dosyası** olarak bilgisayarınıza indirin.
+### Adım 4 — Kaynak Taraması
+**"🌐 Kaynak Bul ve Ders Notu Yaz"** butonuna basıldığında, sistem her alt konu için seviyesine uygun akademik web kaynakları ve YouTube videoları tarar.
+
+### Adım 5 — Kapsamlı Ders Notu Sentezi ve İndirme
+Bulunan kaynaklar ışığında, model her konu için bölüm bölüm profesyonel bir ders çalışma notu sentezler. Sonunda tüm raporu `.txt` formatında bilgisayarınıza indirebilirsiniz.
 
 ---
 
@@ -236,31 +198,14 @@ Tüm araştırma sonuçlarını yapılandırılmış bir **Markdown dosyası** o
 Smart-Curriculum-and-Academic-Resource-Curator-AI-Agent/
 │
 ├── app.py              # Ana uygulama — Streamlit arayüzü ve iş akışı yönetimi
-├── ajan_beyni.py       # Ajan çekirdeği — LLM analiz + otonom araştırma ajanı oluşturma
-├── pdf_motoru.py       # PDF işleme motoru — metin çıkarma ve doğrulama
+├── ajan_beyni.py       # Ajan çekirdeği — Analiz, web taraması, sentezleme işlemleri
+├── pdf_motoru.py       # PDF işleme motoru — metin çıkarma
 ├── config.py           # Yapılandırma — GCP kimlik bilgileri ve model parametreleri
 ├── theme.py            # UI tema motoru — CSS enjeksiyonu ve HTML bileşen render
-│
-├── test/               # Geliştirme ve test betikleri
-│   ├── test_pdf.py         # PDF okuma testi
-│   ├── test_llm.py         # Vertex AI bağlantı testi
-│   ├── pdf_analiz.py       # PDF + LLM entegrasyon testi
-│   └── ajan_internette.py  # Otonom ajan internet tarama testi
-│
 ├── requirements.txt    # Python bağımlılıkları
 ├── .gitignore          # Git hariç tutulan dosyalar
 └── README.md           # Proje dokümantasyonu
 ```
-
-### Modül Detayları
-
-| Modül | Sorumluluk |
-|-------|------------|
-| `app.py` | Streamlit sayfa yapılandırması, oturum yönetimi, dosya yükleme, analiz tetikleme, araştırma akışı ve sonuç indirme |
-| `ajan_beyni.py` | `mufredati_analiz_et()` — Seviye ve konu çıkarımı; `arama_ajani_olustur()` — Tool-calling ajan fabrikası |
-| `pdf_motoru.py` | `mufredat_metnini_cikar()` — PDF doğrulama, metin çıkarma ve boş içerik kontrolü |
-| `config.py` | GCP kimlik yönetimi (yerel/bulut), proje sabitleri (PROJECT_ID, LOCATION, MODEL_NAME) |
-| `theme.py` | Premium CSS tasarımı, glassmorphism bileşenler, animasyonlar ve tüm HTML render fonksiyonları |
 
 ---
 
@@ -274,32 +219,23 @@ Smart-Curriculum-and-Academic-Resource-Curator-AI-Agent/
 
 ### Model Parametreleri (`config.py`)
 
-| Parametre | Değer | Açıklama |
-|-----------|-------|----------|
-| `PROJECT_ID` | `smart-syllabus-agent` | Google Cloud proje kimliği |
-| `LOCATION` | `us-central1` | Vertex AI bölgesi |
-| `MODEL_NAME` | `gemini-2.5-flash` | Kullanılan LLM modeli |
-
-### Ajan Parametreleri (`ajan_beyni.py`)
-
-| Parametre | Değer | Açıklama |
-|-----------|-------|----------|
-| `temperature` | `0.2` | Model yaratıcılık seviyesi (düşük = daha analitik) |
-| `max_iterations` | `5` | Ajanın maksimum düşünme adımı |
-| `max_execution_time` | `45 sn` | Ajan için maksimum çalışma süresi |
-| `max_results` | `3` | DuckDuckGo arama sonuç limiti |
+| Parametre | Açıklama |
+|-----------|----------|
+| `PROJECT_ID` | Google Cloud proje kimliğiniz. Kendi projenizin ID'si ile güncelleyin. |
+| `LOCATION` | Vertex AI bölgesi (örn. `us-central1`). |
+| `MODEL_NAME` | Kullanılan LLM modeli (örn. `gemini-2.5-flash`). |
 
 ### Streamlit Cloud Dağıtımı
 
 Projeyi Streamlit Cloud'a dağıtmak için, `kimlik.json` dosyası yerine **Streamlit Secrets** kullanılır:
 
 1. Streamlit Cloud panosunda **Settings → Secrets** bölümüne gidin
-2. Aşağıdaki yapıda GCP servis hesabı bilgilerini ekleyin:
+2. Aşağıdaki yapıda GCP servis hesabı bilgilerinizi kendi güvenli anahtarlarınız ile ekleyin:
 
 ```toml
 [gcp_service_account]
 type = "service_account"
-project_id = "smart-syllabus-agent"
+project_id = "YOUR_PROJECT_ID"
 private_key_id = "..."
 private_key = "..."
 client_email = "..."
@@ -309,17 +245,3 @@ token_uri = "..."
 ```
 
 ---
-
-## 🤝 Katkıda Bulunma
-
-Katkılarınızı memnuniyetle karşılıyoruz! Aşağıdaki adımları izleyin:
-
-1. Bu depoyu **fork** edin
-2. Yeni bir dal (branch) oluşturun: `git checkout -b feature/yeni-ozellik`
-3. Değişikliklerinizi commit edin: `git commit -m "feat: yeni özellik eklendi"`
-4. Dalınıza push yapın: `git push origin feature/yeni-ozellik`
-5. Bir **Pull Request** açın
-
----
-
-
